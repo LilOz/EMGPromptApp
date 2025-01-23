@@ -17,8 +17,7 @@ This application is designed to guide users through a protocol for recording EMG
 ## Requirements
 
 - Python 3.7 or higher
-  Pillow (for image handling)
-
+- Pillow (for image handling)
 - Pandas (for data logging)
 
 # Setup Instructions
@@ -62,7 +61,7 @@ pip install -r requirements.txt
 ### 1. Run the Application
 
 ```
-python emg_app.py
+python main.py
 ```
 
 ### 2. Enter settings
