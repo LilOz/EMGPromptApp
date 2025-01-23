@@ -22,7 +22,11 @@ This application is designed to guide users through a protocol for recording EMG
 
 # Setup Instructions
 
-### 1. Open the directory in your terminal
+### 1. Clone repository and Open the directory in your terminal
+
+```
+git clone https://github.com/LilOz/EMGPromptApp
+```
 
 ```
 cd <directory to folder with app>
