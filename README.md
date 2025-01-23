@@ -73,6 +73,10 @@ pip install -r requirements.txt
 ```
 python main.py
 ```
+or
+```
+python3 main.py
+```
 
 ### 2. Enter settings
 
