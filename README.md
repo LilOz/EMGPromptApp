@@ -16,7 +16,7 @@ This application is designed to guide users through a protocol for recording EMG
 
 ## Requirements
 
-- Python 3.7 or higher
+- Python 3.7 or higher https://www.python.org/downloads/
 - Pillow (for image handling)
 - Pandas (for data logging)
 
