@@ -29,7 +29,7 @@ git clone https://github.com/LilOz/EMGPromptApp
 ```
 
 ```
-cd <directory to folder with app>
+cd EMGPromptApp
 ```
 
 ### 2. Create a virtual environment:
