@@ -4,30 +4,19 @@ import datetime
 import os
 import pandas as pd
 import random
-import sys
 import time
 import tkinter as tk
 
 
-def resource_path(relative_path):
-    """Get the absolute path to the resource, works for dev and for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
 
 # Define gestures and corresponding image files
 gestures = {
-    "Hand Rest": resource_path("hand_rest.png"),
-    "Fist": resource_path("fist.png"),
-    "Wrist Flexion": resource_path("wrist_flexion.png"),
-    "Wrist Extension": resource_path("wrist_extension.png"),
-    "Radial Deviation": resource_path("radial_deviation.png"),
-    "Ulnar Deviation": resource_path("ulnar_deviation.png"),
+    "Hand Rest": "hand_rest.png",
+    "Fist": "fist.png",
+    "Wrist Flexion": "wrist_flexion.png",
+    "Wrist Extension": "wrist_extension.png",
+    "Radial Deviation": "radial_deviation.png",
+    "Ulnar Deviation": "ulnar_deviation.png",
 }
 
 gesture_labels = {
@@ -50,8 +39,8 @@ class EMGApp:
 
         # Default durations and repetitions
         self.default_gesture_duration = 4  # Default: 4 seconds
-        self.default_rest_duration = 3  # Default: 3 seconds
-        self.default_repetitions = 2  # Default: 2 repetition
+        self.default_rest_duration = 4  # Default: 4 seconds
+        self.default_repetitions = 3  # Default: 3 repetition
 
         # Initialize UI components
         self.phase_label = tk.Label(
@@ -77,17 +66,18 @@ class EMGApp:
             "Repetitions:", "repetitions_entry", 5, self.default_repetitions
         )
 
-        # Container for next pose label and icon
-        self.next_pose_frame = tk.Frame(root)
-        self.next_pose_frame.pack(pady=10)
+        # Container for next pose label and icon (fixed size)
+        self.next_pose_frame = tk.Frame(root, width=600, height=150)  # Fixed size
+        self.next_pose_frame.pack_propagate(False)  # Prevent resizing
+        self.next_pose_frame.pack(pady=10, expand=True, anchor="center")
 
         self.next_pose_label = tk.Label(
-            self.next_pose_frame, text="", font=("Arial", 28), width=30, anchor="w"
+            self.next_pose_frame, text="", font=("Arial", 24), width=20, anchor="w"
         )
         self.next_pose_label.pack(side="left", padx=10)
 
         self.next_pose_icon = tk.Label(self.next_pose_frame)  # Label for the small icon
-        self.next_pose_icon.pack(side="left", padx=10)
+        self.next_pose_icon.pack(side="right", padx=10)
 
         self.timer_label = tk.Label(root, text="", font=("Arial", 28))
         self.timer_label.pack(pady=20)
@@ -151,6 +141,13 @@ class EMGApp:
         self.update_image(gestures["Hand Rest"])
         self.update_label("Get Ready!", color="gray")
 
+        # Prepare gesture order for all repetitions
+        gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
+
+        # Show the first pose in the "Next Pose" section during the countdown
+        first_pose = gesture_order[0]
+        self.update_next_pose(f"Next: {first_pose}", gestures[first_pose])
+
         # Initial countdown
         self.run_timer(10, "Starting In")
         self.start_time = time.time()
@@ -160,9 +157,10 @@ class EMGApp:
                 break
 
             # Shuffle gestures for this repetition
-            gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
+            if repetition > 0:  # Shuffle again for subsequent repetitions
+                gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
 
-            for next_pose in gesture_order:
+            for i, next_pose in enumerate(gesture_order):
                 if not self.running:
                     break
 
@@ -177,6 +175,13 @@ class EMGApp:
 
                 if not self.running:
                     break
+
+                # Show the next pose during the rest phase
+                if i < len(gesture_order) - 1:
+                    next_next_pose = gesture_order[i + 1]
+                    self.update_next_pose(f"Next: {next_next_pose}", gestures[next_next_pose])
+                else:
+                    self.update_next_pose("", None)  # No next pose if it's the last one
 
                 # Rest phase
                 self.update_image(gestures["Hand Rest"])
@@ -205,11 +210,11 @@ class EMGApp:
             self.phase_label.config(bg=color, fg="white")
 
     def update_next_pose(self, text, image_path=None):
-        """Update the 'next pose' label and icon."""
+        """Update the 'next pose' label and icon without resizing the frame."""
         self.next_pose_label.config(text=text)
         if image_path:
             img = Image.open(image_path)
-            img = img.resize((150, 150))  # Resize the icon to be larger
+            img = img.resize((150, 150))  # Resize the icon to a smaller size
             photo = ImageTk.PhotoImage(img)
             self.next_pose_icon.config(image=photo)
             self.next_pose_icon.image = (
@@ -279,7 +284,7 @@ class EMGApp:
         """Stop the recording protocol."""
         self.running = False
 
-
+    
 # Run the application
 root = tk.Tk()
 app = EMGApp(root)
