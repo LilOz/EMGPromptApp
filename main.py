@@ -127,7 +127,7 @@ class EMGApp:
 
         # Create file name
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.save_file = f"{prefix}_{timestamp}.csv" if prefix else f"{timestamp}.csv"
+        self.save_file = f"{prefix}_{timestamp}" if prefix else f"{timestamp}"
 
         # Hide configuration inputs
         self.config_frame.pack_forget()
@@ -278,7 +278,14 @@ class EMGApp:
         df = pd.DataFrame(data)
         # Ensure the directory exists
         os.makedirs("Output Files", exist_ok=True)
-        df.to_csv(f"Output Files/{self.save_file}")
+
+        # Ensure the directory exists
+        directory = f"Output Files/{self.save_file}"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Save the CSV file
+        df.to_csv(f"{directory}/labels.csv")
 
     def stop_protocol(self):
         """Stop the recording protocol."""
