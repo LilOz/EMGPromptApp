@@ -155,13 +155,11 @@ class EMGApp:
         self.run_timer(10, "Starting In")
         self.start_time = time.time()
 
-        for repetition in range(self.repetitions):
+        for repitition in range(self.repetitions):
             if not self.running:
                 break
 
-            # Shuffle gestures for this repetition
-            if repetition > 0:  # Shuffle again for subsequent repetitions
-                gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
+            next_gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
 
             for i, next_pose in enumerate(gesture_order):
                 if not self.running:
@@ -182,14 +180,21 @@ class EMGApp:
                 # Show the next pose during the rest phase
                 if i < len(gesture_order) - 1:
                     next_next_pose = gesture_order[i + 1]
-                    self.update_next_pose(f"Next: {next_next_pose}", gestures[next_next_pose])
                 else:
-                    self.update_next_pose("", None)  # No next pose if it's the last one
+                    next_next_pose = next_gesture_order[0]
+                
+                if repitition == self.repetitions and i == len(gesture_order) - 1:
+                    self.update_next_pose("", None)
+                else:
+                    self.update_next_pose(f"Next: {next_next_pose}", gestures[next_next_pose])
 
                 # Rest phase
                 self.update_image(gestures["Hand Rest"])
                 self.update_label("Rest", color="red")
                 self.run_timer(self.rest_duration, "Rest and wait for next gesture")
+
+            gesture_order = next_gesture_order
+
 
         # End protocol
         self.update_label("Complete!", color="gray")
