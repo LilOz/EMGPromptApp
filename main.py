@@ -33,7 +33,7 @@ class EMGApp:
     def __init__(self, root):
         self.root = root
         self.root.title("EMG Recording Protocol")
-        self.root.geometry("800x800")  # Set a larger window size
+        self.root.geometry("700x700")  # Set a larger window size
 
         self.gesture_labels = []
 
@@ -46,7 +46,7 @@ class EMGApp:
         self.phase_label = tk.Label(
             root, text="Press Start to Begin", font=("Arial", 36), width=30, height=2
         )
-        self.phase_label.pack(pady=20)
+        self.phase_label.pack(pady=10)
 
         # File name and config input fields
         self.config_frame = tk.Frame(root)
@@ -66,10 +66,11 @@ class EMGApp:
             "Repetitions:", "repetitions_entry", 5, self.default_repetitions
         )
 
+
         # Container for next pose label and icon (fixed size)
-        self.next_pose_frame = tk.Frame(root, width=600, height=150)  # Fixed size
+        self.next_pose_frame = tk.Frame(root, width=600, height=100)  # Fixed size
         self.next_pose_frame.pack_propagate(False)  # Prevent resizing
-        self.next_pose_frame.pack(pady=10, expand=True, anchor="center")
+        self.next_pose_frame.pack(pady=5, expand=True, anchor="center")
 
         self.next_pose_label = tk.Label(
             self.next_pose_frame, text="", font=("Arial", 24), width=20, anchor="w"
@@ -80,10 +81,10 @@ class EMGApp:
         self.next_pose_icon.pack(side="right", padx=10)
 
         self.timer_label = tk.Label(root, text="", font=("Arial", 28))
-        self.timer_label.pack(pady=20)
+        self.timer_label.pack(pady=10)
 
         self.image_label = tk.Label(root)  # Label to display pose images
-        self.image_label.pack(pady=20)
+        self.image_label.pack(pady=10)
 
         self.start_button = tk.Button(
             root,
@@ -92,7 +93,7 @@ class EMGApp:
             command=self.start_protocol,
             width=10,
         )
-        self.start_button.pack(pady=20)
+        self.start_button.pack(pady=10)
 
         self.running = False
 
@@ -232,7 +233,7 @@ class EMGApp:
         """Update the main pose image."""
         if image_path:
             img = Image.open(image_path)
-            img = img.resize((400, 400))  # Resize the main image to be larger
+            img = img.resize((300, 300))  # Resize the main image to be larger
             photo = ImageTk.PhotoImage(img)
             self.image_label.config(image=photo)
             self.image_label.image = (
@@ -280,12 +281,12 @@ class EMGApp:
         os.makedirs("Output Files", exist_ok=True)
 
         # Ensure the directory exists
-        directory = f"Output Files/{self.save_file}"
+        directory = os.path.join("Output Files", self.save_file)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         # Save the CSV file
-        df.to_csv(f"{directory}/labels.csv")
+        df.to_csv(os.path.join(directory, 'labels.csv'))
 
     def stop_protocol(self):
         """Stop the recording protocol."""
