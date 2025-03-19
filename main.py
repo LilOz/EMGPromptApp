@@ -66,6 +66,14 @@ class EMGApp:
             "Repetitions:", "repetitions_entry", 5, self.default_repetitions
         )
 
+        self.start_button = tk.Button(
+            root,
+            text="Start",
+            font=("Arial", 28),
+            command=self.start_protocol,
+            width=10,
+        )
+        self.start_button.pack(pady=10)
 
         # Container for next pose label and icon (fixed size)
         self.next_pose_frame = tk.Frame(root, width=600, height=100)  # Fixed size
@@ -86,14 +94,7 @@ class EMGApp:
         self.image_label = tk.Label(root)  # Label to display pose images
         self.image_label.pack(pady=10)
 
-        self.start_button = tk.Button(
-            root,
-            text="Start",
-            font=("Arial", 28),
-            command=self.start_protocol,
-            width=10,
-        )
-        self.start_button.pack(pady=10)
+
 
         self.running = False
 
@@ -134,7 +135,8 @@ class EMGApp:
         self.config_frame.pack_forget()
 
         self.running = True
-        self.start_button.config(state="disabled")  # Disable the button while running
+        # self.start_button.config(state="disabled")  # Disable the button while running
+        self.start_button.pack_forget()
         protocol_thread = Thread(target=self.run_protocol)
         protocol_thread.start()
 
@@ -204,6 +206,8 @@ class EMGApp:
         self.rest_duration_entry.config(state="normal")
         self.repetitions_entry.config(state="normal")
 
+        # Reshow the start button
+        self.start_button.pack(pady=10)
     def update_label(self, text, color=None):
         """Update the central label."""
         self.phase_label.config(text=text)
