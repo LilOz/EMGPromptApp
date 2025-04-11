@@ -4,6 +4,11 @@ import pandas as pd
 def label_emg_df(emg_df, label_df, filename=None):
 
     try:
+        # Filter EMG data to start from the first timestamp in label_df
+        min_label_time = label_df['time_unix'].min()
+        max_label_time = label_df['time_unix'].max()
+        emg_df = emg_df[(emg_df[' Timestamp'] >= min_label_time) & (emg_df[' Timestamp'] <= max_label_time)].copy()
+
         # Assign labels by finding the closest timestamp in label_df for each EMG row
         emg_df['class'] = emg_df[' Timestamp'].apply(lambda t: label_df.loc[(label_df['time_unix'] - t).abs().idxmin(), 'class'])
     
@@ -17,7 +22,7 @@ def label_emg_df(emg_df, label_df, filename=None):
 
 def auto_detect_files_in_subfolders():
     # Walk through all subdirectories and files in the current directory
-    for root, _, files in os.walk('.'):
+    for root, _, files in os.walk('./Output Files'):
         emg_file = None
         label_file = None
 
