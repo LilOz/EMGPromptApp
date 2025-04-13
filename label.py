@@ -20,16 +20,22 @@ def label_emg_df(emg_df, label_df, filename=None):
     print(f"Labeled EMG data saved to {(filename or 'emg_labeled') + '.txt'}")
 
 
-def auto_detect_files_in_subfolders():
+def auto_detect_files_in_subfolders(output_file_name='labeled_emg_output'):
     # Walk through all subdirectories and files in the current directory
     for root, _, files in os.walk('./Output Files'):
+        path = os.path.join(root, output_file_name + ".txt")
+        # Skip folder if it already contains a labeled file
+        if os.path.exists(path):
+            print(f"Skipping {root} (already labeled)")
+            continue
+
         emg_file = None
         label_file = None
 
         for file in files:
             if file.endswith('.txt'):  # EMG file heuristic
                 emg_file = os.path.join(root, file)
-            elif file.endswith('.csv'):  # Label file heuristic
+            if file.endswith('.csv'):  # Label file heuristic
                 label_file = os.path.join(root, file)
 
         if emg_file and label_file:
@@ -37,11 +43,8 @@ def auto_detect_files_in_subfolders():
             emg_df = pd.read_csv(emg_file, comment='%', skiprows=1)  # Adjust if needed
             label_df = pd.read_csv(label_file)
 
-            # Create the output filename for the labeled data in the same directory
-            output_filename = os.path.join(root, "labeled_emg_output")
-
             # Call the function to label the EMG data
-            label_emg_df(emg_df, label_df, filename=output_filename)
+            label_emg_df(emg_df, label_df, filename=os.path.join(root, output_file_name)) 
         else:
             print(f"Required EMG and label files not found in directory: {root}")
 

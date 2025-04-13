@@ -1,13 +1,12 @@
-from PIL import Image, ImageTk  # Pillow for image handling
-from threading import Thread
 import datetime
 import os
-import pandas as pd
 import random
 import time
 import tkinter as tk
+from threading import Thread
 
-
+import pandas as pd
+from PIL import Image, ImageTk  # Pillow for image handling
 
 # Define gestures and corresponding image files
 gestures = {
@@ -94,8 +93,6 @@ class EMGApp:
         self.image_label = tk.Label(root)  # Label to display pose images
         self.image_label.pack(pady=10)
 
-
-
         self.running = False
 
     def add_config_input(self, label_text, attr_name, width, default_value):
@@ -153,13 +150,16 @@ class EMGApp:
 
         # Initial countdown
         self.run_timer(10, "Starting In")
-        self.start_time = time.time()
+
+        debug_start_time = 0
 
         for repitition in range(self.repetitions):
             if not self.running:
                 break
 
-            next_gesture_order = random.sample([g for g in gestures.keys()], len(gestures))
+            next_gesture_order = random.sample(
+                [g for g in gestures.keys()], len(gestures)
+            )
 
             for i, next_pose in enumerate(gesture_order):
                 if not self.running:
@@ -167,11 +167,14 @@ class EMGApp:
 
                 # Perform the gesture
                 self.update_image(gestures[next_pose])
-                self.gesture_labels.append(
-                    gesture_labels[next_pose]
-                )  # Add label for the current gesture
                 self.update_label(f"Perform: {next_pose}", color="green")
                 self.hide_next_pose()  # Hide the "next pose" section
+
+                if debug_start_time != 0:
+                    print(f"Rest Took {round(time.time() - debug_start_time, 2)} seconds")
+                debug_start_time = time.time()
+
+                pose_start_time = time.time()
                 self.run_timer(self.gesture_duration, "Hold Gesture")
 
                 if not self.running:
@@ -182,19 +185,27 @@ class EMGApp:
                     next_next_pose = gesture_order[i + 1]
                 else:
                     next_next_pose = next_gesture_order[0]
-                
-                if repitition == self.repetitions and i == len(gesture_order) - 1:
+
+                if repitition == self.repetitions - 1 and i == len(gesture_order) - 1:
                     self.update_next_pose("", None)
                 else:
-                    self.update_next_pose(f"Next: {next_next_pose}", gestures[next_next_pose])
+                    self.update_next_pose(
+                        f"Next: {next_next_pose}", gestures[next_next_pose]
+                    )
 
                 # Rest phase
                 self.update_image(gestures["Hand Rest"])
                 self.update_label("Rest", color="red")
+                print(
+                    f"Perform gesture: {next_pose} Took {round(time.time() - debug_start_time, 2)} seconds"
+                )
+                debug_start_time = time.time()
+                pose_end_time = time.time()
+                self.gesture_labels.append((gesture_labels[next_pose], pose_start_time, pose_end_time)) # array of (pose, start_time, end_time)
+                print(self.gesture_labels)
                 self.run_timer(self.rest_duration, "Rest and wait for next gesture")
 
             gesture_order = next_gesture_order
-
 
         # End protocol
         self.update_label("Complete!", color="gray")
@@ -213,6 +224,7 @@ class EMGApp:
 
         # Reshow the start button
         self.start_button.pack(pady=10)
+
     def update_label(self, text, color=None):
         """Update the central label."""
         self.phase_label.config(text=text)
@@ -259,6 +271,44 @@ class EMGApp:
             if not self.running:
                 break
 
+    # def create_dataframe(self):
+    #     """Save the gesture labels and timing into a CSV file."""
+    #     classes = []
+    #     times = []
+    #     times_unix = []
+    #
+    #     time_step = 0.004  # 250 Hz sample rate
+    #     time_index = 0
+    #
+    #     for label in self.gesture_labels:
+    #         # Handle adding the class the correct number of times
+    #         classes += [label] * 250 * self.gesture_duration
+    #         for _ in range(250 * self.gesture_duration):
+    #             times_unix.append(time_index * time_step + self.start_time)
+    #             times.append(time_index * time_step)
+    #             time_index += 1
+    #
+    #         # Handle the rest period
+    #         classes += [0] * 250 * self.rest_duration
+    #         for _ in range(250 * self.rest_duration):
+    #             times_unix.append(time_index * time_step + self.start_time)
+    #             times.append(time_index * time_step)
+    #             time_index += 1
+    #
+    #     data = {"class": classes, "time": times, "time_unix": times_unix}
+    #
+    #     df = pd.DataFrame(data)
+    #     # Ensure the directory exists
+    #     os.makedirs("Output Files", exist_ok=True)
+    #
+    #     # Ensure the directory exists
+    #     directory = os.path.join("Output Files", self.save_file)
+    #     if not os.path.exists(directory):
+    #         os.makedirs(directory)
+    #
+    #     # Save the CSV file
+    #     df.to_csv(os.path.join(directory, "labels.csv"))
+
     def create_dataframe(self):
         """Save the gesture labels and timing into a CSV file."""
         classes = []
@@ -266,26 +316,27 @@ class EMGApp:
         times_unix = []
 
         time_step = 0.004  # 250 Hz sample rate
-        time_index = 0
+        self.start_time = self.gesture_labels[0][1]
+        t = 0  
 
-        for label in self.gesture_labels:
+        for label, start_time, end_time in self.gesture_labels:
             # Handle adding the class the correct number of times
-            classes += [label] * 250 * self.gesture_duration
-            for _ in range(250 * self.gesture_duration):
-                times_unix.append(time_index * time_step + self.start_time)
-                times.append(time_index * time_step)
-                time_index += 1
+            while t + self.start_time < start_time:
+                classes.append(0) # rest period
+                times_unix.append(t + self.start_time)
+                times.append(t) 
+                t += time_step
 
-            # Handle the rest period
-            classes += [0] * 250 * self.rest_duration
-            for _ in range(250 * self.rest_duration):
-                times_unix.append(time_index * time_step + self.start_time)
-                times.append(time_index * time_step)
-                time_index += 1
+            while t + self.start_time < end_time:
+                classes.append(label)
+                times_unix.append(t + self.start_time)
+                times.append(t)
+                t += time_step
 
         data = {"class": classes, "time": times, "time_unix": times_unix}
 
         df = pd.DataFrame(data)
+
         # Ensure the directory exists
         os.makedirs("Output Files", exist_ok=True)
 
@@ -295,13 +346,14 @@ class EMGApp:
             os.makedirs(directory)
 
         # Save the CSV file
-        df.to_csv(os.path.join(directory, 'labels.csv'))
+        df.to_csv(os.path.join(directory, "labels.csv"))
+        print(f"Data saved to {os.path.join(directory, "labels.csv")}")
 
     def stop_protocol(self):
         """Stop the recording protocol."""
         self.running = False
 
-    
+
 # Run the application
 root = tk.Tk()
 app = EMGApp(root)
