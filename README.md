@@ -1,6 +1,6 @@
 # EMG Recording Protocol Application
 
-This application is designed to guide users through a protocol for recording EMG (Electromyography) data. It provides a graphical interface for performing and timing specific hand gestures, saving the results to a CSV file for further analysis (can be easily synced and combined with emg data from cyton).
+This application is designed to guide users through a protocol for recording EMG (Electromyography) data. It provides a graphical interface for performing and timing specific hand gestures, saving the results to a CSV file for further analysis (can be easily synced and combined with emg data from OpenBCI GUI if ran along side it).
 
 ![Screengrab of EMG Recording Protocol Application](./assets/data-collection.png)
 
