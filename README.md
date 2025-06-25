@@ -2,6 +2,8 @@
 
 This application is designed to guide users through a protocol for recording EMG (Electromyography) data. It provides a graphical interface for performing and timing specific hand gestures, saving the results to a CSV file for further analysis (can be easily synced and combined with emg data from cyton).
 
+![Screengrab of EMG Recording Protocol Application](./assets/data-collection.png)
+
 ## Features
 
 - Gesture Timing: Perform and time specific hand gestures with customizable durations.
